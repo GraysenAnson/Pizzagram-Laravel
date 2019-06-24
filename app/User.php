@@ -2,9 +2,11 @@
 
 namespace App;
 
+use App\Mail\NewUserWelcomeMail;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\Mail;
 
 class User extends Authenticatable
 {
@@ -37,13 +39,29 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    //This user has many posts
-    public function posts()
+    protected static function boot()
     {
-        return $this->hasMany(Post::class);
+        parent::boot();
+
+        static::created(function ($user) {
+            $user->profile()->create([
+                'title' => $user->username,
+            ]);
+
+            Mail::to($user->email)->send(new NewUserWelcomeMail());
+        });
     }
 
-    //this user has one profile
+    public function posts()
+    {
+        return $this->hasMany(Post::class)->orderBy('created_at', 'DESC');
+    }
+
+    public function following()
+    {
+        return $this->belongsToMany(Profile::class);
+    }
+
     public function profile()
     {
         return $this->hasOne(Profile::class);

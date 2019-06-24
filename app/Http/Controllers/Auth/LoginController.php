@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Auth;
+use App\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
@@ -25,7 +27,8 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+    //hardcoded to direct to first users in db, TODO: make this dynamic
+    protected $redirectTo = 'profile/1';
 
     /**
      * Create a new controller instance.
@@ -35,5 +38,10 @@ class LoginController extends Controller
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
+    }
+
+    public function logout(){
+        Auth::logout();
+        return redirect('/')->with('status','User has been logged out!');
     }
 }
